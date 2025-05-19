@@ -39,10 +39,10 @@ fluidPage(
     
     dashboardSidebar(
       sidebarMenu(
-        menuItem("Contexte", tabName = "contexte", icon = icon("bookmark")),
+        menuItem("Contexte de la SAÉ", tabName = "contexte", icon = icon("bookmark")),
         menuItem("Globale", tabName = "globale", icon = icon("dashboard")),
         menuItem("Carte", tabName = "carte", icon = icon("map")),
-        menuItem("Régression Linéaire", tabName = "regression", icon = icon("chart-line"))
+        menuItem("ACP ", tabName = "regression", icon = icon("chart-line"))
       )
     ),
     dashboardBody(
@@ -61,6 +61,9 @@ fluidPage(
         font-size: 40px; /* Changez cette valeur pour ajuster la taille */
         text-align: center; /* Centre le texte */
       }")),
+      
+      #petit logo en haut a droite pour changer le style de l'app
+      controlbar = dashboardControlbar(skinSelector())
     
     )
   )
