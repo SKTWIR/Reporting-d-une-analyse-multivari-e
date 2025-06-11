@@ -13,9 +13,10 @@ library(plotly)
 function(input, output, session) {
   
   data_processed <- reactive({
-    req(file.exists("C:/Users/SkilWeebo/Downloads/Données ville2.xlsx"))
-    
-    df <- read_excel("C:/Users/SkilWeebo/Downloads/Données ville2.xlsx")
+    url <- "https://github.com/SKTWIR/Reporting-d-une-analyse-multivari-e/raw/main/Donn%C3%A9es%20ville2.xlsx"
+    temp_file <- tempfile(fileext = ".xlsx")
+    download.file(url, destfile = temp_file, mode = "wb")
+    df <- read_excel(temp_file)
     df <- df[, c(3, 5, 14:29)]
     
     tourisme_vars <- df %>%
