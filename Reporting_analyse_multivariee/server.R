@@ -8,17 +8,16 @@ library(cluster)
 library(stringr)
 library(sf)
 library(leaflet)
+library(plotly)
 
 function(input, output, session) {
   
-  # Lecture et traitement des données
   data_processed <- reactive({
     req(file.exists("C:/Users/SkilWeebo/Downloads/Données ville2.xlsx"))
     
     df <- read_excel("C:/Users/SkilWeebo/Downloads/Données ville2.xlsx")
     df <- df[, c(3, 5, 14:29)]
     
-    # Variables tourisme & culture
     tourisme_vars <- df %>%
       select(NB_G101, NB_G102, NB_G103, NB_G104) %>%
       mutate_all(~replace(., is.na(.), 0))
@@ -50,7 +49,6 @@ function(input, output, session) {
     
     label_map <- setNames(ordre$cat, ordre$cluster_num)
     df$cluster <- label_map[as.character(df$cluster_num)]
-    
     df$LIBGEO <- str_to_upper(df$LIBGEO)
     
     acp <- PCA(vars_score, graph = FALSE)
@@ -60,17 +58,30 @@ function(input, output, session) {
     return(result)
   })
   
-  # Graphique ACP
-  output$plot_acp <- renderPlot({
+  # ACP interactive filtrée par cluster
+  output$plot_acp <- renderPlotly({
     result <- data_processed()
     
-    ggplot(result, aes(x = Dim.1, y = Dim.2, color = cluster)) +
+    # Appliquer le filtre si sélection multiple ou simple
+    filtered_data <- if (is.null(input$selected_clusters) || "Toutes" %in% input$selected_clusters) {
+      result
+    } else {
+      result %>% filter(cluster %in% input$selected_clusters)
+    }
+    
+    p <- ggplot(filtered_data, aes(x = Dim.1, y = Dim.2, color = cluster, text = LIBGEO)) +
       geom_point(size = 2) +
       theme_minimal() +
-      labs(title = "ACP - Typologie des communes")
+      labs(
+        title = "ACP - Typologie des communes",
+        x = "Composante principale 1",
+        y = "Composante principale 2",
+        color = "Typologie"
+      )
+    
+    ggplotly(p, tooltip = "text")
   })
   
-  # Carte interactive Leaflet
   output$carte_metro_interactive <- renderLeaflet({
     result <- data_processed()
     
@@ -83,12 +94,10 @@ function(input, output, session) {
     carte_clusters$cluster_affichee <- case_when(
       carte_clusters$cluster == "Tourisme et culture" ~ "Tourisme et culture",
       carte_clusters$cluster == "Peu touristique et peu culturel" ~ "Peu touristique et peu culturel",
-      TRUE ~ NA_character_  # autres ignorés
+      TRUE ~ NA_character_
     )
     
-    # ❗️Filtrage des communes non classées
-    carte_clusters <- carte_clusters %>%
-      filter(!is.na(cluster_affichee))
+    carte_clusters <- carte_clusters %>% filter(!is.na(cluster_affichee))
     
     palette <- colorFactor(
       palette = c(
