@@ -62,7 +62,8 @@
         tabItems(
           tabItem(tabName = "contexte",
                   h2("Contexte de la SAÉ"),
-                  p("Cette section présente le contexte général du projet de SAÉ, ses objectifs pédagogiques, ainsi que les données utilisées.")
+                  p("Cette section présente le contexte général du projet de SAÉ, ses objectifs pédagogiques, ainsi que les données utilisées.
+                    Pour nos données nous avons utilisés les données de communnes entre 10 et 20K habitants")
           ),
           tabItem(tabName = "globale",
                   h2("Analyse Globale"),
