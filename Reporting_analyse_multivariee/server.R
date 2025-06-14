@@ -10,13 +10,13 @@ library(sf)
 library(leaflet)
 library(plotly)
 
-function(input, output, session) {
+shinyServer(function(input, output, session) {
   
   data_processed <- reactive({
     url <- "https://github.com/SKTWIR/Reporting-d-une-analyse-multivari-e/raw/main/Donn%C3%A9es%20ville2.xlsx"
     temp_file <- tempfile(fileext = ".xlsx")
     download.file(url, destfile = temp_file, mode = "wb")
-    df <- read_excel(temp_file)
+    df <- readxl::read_excel(temp_file)
     df <- df[, c(3, 5, 14:29)]
     
     tourisme_vars <- df %>%
@@ -59,11 +59,9 @@ function(input, output, session) {
     return(result)
   })
   
-  # ACP interactive filtrée par cluster
   output$plot_acp <- renderPlotly({
     result <- data_processed()
     
-    # Appliquer le filtre si sélection multiple ou simple
     filtered_data <- if (is.null(input$selected_clusters) || "Toutes" %in% input$selected_clusters) {
       result
     } else {
@@ -139,4 +137,4 @@ function(input, output, session) {
         position = "bottomright"
       )
   })
-}
+})
