@@ -31,7 +31,21 @@ ui <- fluidPage(
                column(
                  width = 8, offset = 2,
                  h1("Contexte de la SAÉ", class = "mb-4"),
-                 p("Cette section présente le contexte général du projet de SAÉ, ses objectifs pédagogiques, ainsi que les données utilisées. Pour nos données nous avons utilisé les données des communes entre 10 et 20K habitants."),
+                 p("Dans le cadre de notre SAÉ REPORTING D’UNE ANALYSE MULTIVARIÉE, nous avons travaillé sur un projet visant à établir une typologie des communes françaises selon les équipements publics disponibles (culturels, touristiques, sportifs, éducatifs, de santé, etc.). 
+                 L’étude a porté plus particulièrement sur les communes de 10 000 à 20 000 habitants."),
+                 
+                p("Notre problématique s’est centrée sur l’étude des équipements touristiques et culturels afin de déterminer s’il existe un lien entre les communes très touristiques et celles disposant de nombreux équipements culturels. Nous avons ainsi cherché à répondre à la question suivante : les communes à fort attrait touristique sont-elles également riches en équipements culturels ?
+                Notre démarche a suivi plusieurs étapes :"),
+                 p("•	Construction d’une base de données à partir des fichiers de l’INSEE et de la Base Permanente des Équipements (BPE)."),
+                 
+                 p("•	Sélection et traitement des variables liées aux domaines touristique et culturel."),
+
+                 p("•	Réalisation d’une Analyse en Composantes Principales (ACP) pour explorer les structures de données et identifier des axes de différenciation."),
+
+                 p("•	Typologie par clustering afin de regrouper les communes selon des profils similaires."),
+
+                 p("•	Développement d’une application R Shiny permettant d’automatiser et d’explorer ces résultats de manière interactive.
+Cette application facilite la visualisation des résultats, met en évidence les liens entre tourisme et culture dans les communes étudiées, et permet d’envisager un suivi annuel automatisé."),
                  tags$hr()
                )
              )
