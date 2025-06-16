@@ -1,12 +1,9 @@
 library(shiny)
 library(bslib)
 library(fontawesome)
+library(leaflet) 
+library(plotly)  
 
-# Installation des packages si nécessaire (optionnel, à mettre en global.R idéalement)
-packages <- c("shiny", "bslib", "sf", "plotly", "leaflet", "fontawesome")
-installed <- rownames(installed.packages())
-to_install <- setdiff(packages, installed)
-if (length(to_install) > 0) install.packages(to_install)
 
 # Thème Bootstrap moderne avec bslib
 theme_moderne <- bs_theme(
