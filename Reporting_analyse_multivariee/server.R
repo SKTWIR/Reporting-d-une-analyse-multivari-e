@@ -1,3 +1,4 @@
+#chargement des librairies
 library(shiny)
 library(readxl)
 library(dplyr)
@@ -11,7 +12,7 @@ library(leaflet)
 library(plotly)
 
 shinyServer(function(input, output, session) {
-  
+  #récupération du jeu de données enregistré sur github
   data_processed <- reactive({
     url <- "https://github.com/SKTWIR/Reporting-d-une-analyse-multivari-e/raw/main/Donn%C3%A9es%20ville2.xlsx"
     temp_file <- tempfile(fileext = ".xlsx")
@@ -19,10 +20,12 @@ shinyServer(function(input, output, session) {
     df <- readxl::read_excel(temp_file)
     df <- df[, c(3, 5, 14:29)]
     
+    #récupération des variable du tourisme
     tourisme_vars <- df %>%
       select(NB_G101, NB_G102, NB_G103, NB_G104) %>%
       mutate_all(~replace(., is.na(.), 0))
     
+    #récupération des variable culturelle
     culture_vars <- df %>%
       select(NB_F303, NB_F303_NB_SALLES, NB_F305, NB_F307, NB_F315, NB_F315_NB_SALLES) %>%
       mutate_all(~replace(., is.na(.), 0))
@@ -32,6 +35,7 @@ shinyServer(function(input, output, session) {
     
     vars_score <- df %>% select(score_tourisme, score_culture)
     
+    #méthode des K moyenne pour réalisé le clustering
     set.seed(42)
     km <- kmeans(scale(vars_score), centers = 4, nstart = 25)
     df$cluster_num <- km$cluster
