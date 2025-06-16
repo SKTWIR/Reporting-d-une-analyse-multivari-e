@@ -9,7 +9,7 @@ library(plotly)
 # Thème Bootstrap moderne avec bslib
 theme_moderne <- bs_theme(
   version = 5,
-  bootswatch = "minty",    # Choix d'un thème clair et frais
+  bootswatch = "minty",    # Choix d'un thème clair
   primary = "#2C3E50",     # Couleur principale sombre
   secondary = "#18BC9C",   # Couleur secondaire turquoise
   base_font = font_google("Poppins"), # Police moderne
