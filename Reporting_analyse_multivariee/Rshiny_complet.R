@@ -7,7 +7,7 @@ library(ggplot2)
 library(cluster)
 library(stringr)
 library(sf)
-library(DT)  # Pour afficher des tableaux interactifs
+library(DT)
 
 # UI
 ui <- fluidPage(
@@ -18,15 +18,9 @@ ui <- fluidPage(
       h3("Sélectionnez les données"),
       fileInput("file", "Importer un fichier Excel", accept = ".xlsx"),
       hr(),
-      
-      # Sélection multiple des régions avec option par défaut
       selectInput("region", "Choisissez une ou plusieurs régions", choices = NULL, selected = NULL, multiple = TRUE),
-      
-      # Ajouter les boutons de génération et de téléchargement
       actionButton("generate", "Générer les résultats"),
       downloadButton("download_data", "Télécharger la base filtrée"),
-      
-      # Ajouter un bouton de téléchargement pour le fichier Word
       tags$hr(),
       tags$p("Télécharger le rapport d'analyse :"),
       tags$a(href = "https://www.dropbox.com/scl/fi/tmzkxxtnbnofbqjs2bgf0/SAE-4.docx?rlkey=acny2yeonatpt4faviyx3kihq&st=l2wdq4ls&dl=1", "Télécharger le fichier Word", target = "_blank")
@@ -47,14 +41,15 @@ ui <- fluidPage(
                    tags$li(style = "font-size: 18px; line-height: 1.8;", "Développement d’une application R Shiny permettant d’automatiser et d’explorer ces résultats de manière interactive. Cette application facilite la visualisation des résultats, met en évidence les liens entre tourisme et culture dans les communes étudiées, et permet d’envisager un suivi annuel automatisé.")
                  )
         ),
+        tabPanel("Synthèse Régionale", DTOutput("synthese_table")),
         tabPanel("ACP - Graphique",
-                 plotOutput("acp_typologie", height = "600px"),  # Scatter plot en haut
-                 plotOutput("acp_biplot", height = "600px"),  # ACP biplot au milieu
-                 plotOutput("scatter_plot", height = "600px")  # Typologie en bas
+                 plotOutput("acp_typologie", height = "600px"),
+                 plotOutput("acp_biplot", height = "600px"),
+                 plotOutput("scatter_plot", height = "600px")
         ),
-        tabPanel("Carte Métropole", plotOutput("carte_metro", height = "950px", width = "100%")),  # Prendre toute la largeur de la page
+        tabPanel("Carte Métropole", plotOutput("carte_metro", height = "950px", width = "100%")),
         tabPanel("Carte Mayotte", plotOutput("carte_mayotte", height = "800px")),
-        tabPanel("Base de Données", DTOutput("data_table"))  # Ajout d'une page pour la base de données
+        tabPanel("Base de Données", DTOutput("data_table")),
       )
     )
   )
@@ -63,13 +58,11 @@ ui <- fluidPage(
 # Server
 server <- function(input, output, session) {
   
-  # Données réactives pour la génération des résultats
   data_reactive <- eventReactive(input$generate, {
     req(input$file)
     df <- read_excel(input$file$datapath)
-    df <- df[, c(3, 5, 14:29)]  # Sélectionner les colonnes nécessaires
+    df <- df[, c(3, 5, 14:29)]
     
-    # Séparer les variables en tourisme vs culture
     tourisme_vars <- df %>%
       select(NB_G101, NB_G102, NB_G103, NB_G104) %>%
       mutate_all(~replace(., is.na(.), 0))
@@ -78,17 +71,14 @@ server <- function(input, output, session) {
       select(NB_F303, NB_F303_NB_SALLES, NB_F305, NB_F307, NB_F315, NB_F315_NB_SALLES) %>%
       mutate_all(~replace(., is.na(.), 0))
     
-    # Créer 2 scores normalisés
     df$score_tourisme <- rowSums(scale(tourisme_vars))
     df$score_culture  <- rowSums(scale(culture_vars))
     
-    # Clustering
     vars_score <- df %>% select(score_tourisme, score_culture)
     set.seed(42)
     km <- kmeans(scale(vars_score), centers = 4, nstart = 25)
     df$cluster_num <- km$cluster
     
-    # Attribution des libellés
     cluster_summary <- df %>%
       group_by(cluster_num) %>%
       summarise(tour = mean(score_tourisme), cult = mean(score_culture))
@@ -104,41 +94,29 @@ server <- function(input, output, session) {
     label_map <- setNames(ordre$cat, ordre$cluster_num)
     df$cluster <- label_map[as.character(df$cluster_num)]
     
-    # ACP
     acp <- PCA(vars_score, graph = FALSE)
     coord <- as.data.frame(acp$ind$coord[, 1:2])
     result <- cbind(df, coord)
     
-    # Harmonisation des noms
     result$LIBGEO <- str_to_upper(result$LIBGEO)
-    
     return(result)
   })
   
-  # Mise à jour dynamique des régions disponibles
   observe({
     req(data_reactive())
     result <- data_reactive()
-    
-    # Exclure les îles dans la liste des régions
     regions <- unique(result$Région)
     excluded_regions <- c("Guadeloupe", "Martinique", "Guyane", "La Réunion", "Mayotte", "Saint-Pierre-et-Miquelon", "Saint-Barthélemy", "Saint-Martin")
     regions <- regions[!regions %in% excluded_regions]
-    
-    # Ajouter l'option "Tout sélectionner" en haut
     updateSelectInput(session, "region", choices = c("Tout sélectionner" = "", regions), selected = NULL)
   })
   
-  # Scatter plot des individus avec filtre appliqué
   output$scatter_plot <- renderPlot({
     req(data_reactive())
     result <- data_reactive()
-    
-    # Filtrage selon la sélection des régions
     if(length(input$region) > 0 && !"" %in% input$region) {
       result <- result %>% filter(Région %in% input$region)
     }
-    
     ggplot(result, aes(x = Dim.1, y = Dim.2, color = as.factor(Région))) +
       geom_point(size = 2) +
       theme_minimal() +
@@ -159,17 +137,12 @@ server <- function(input, output, session) {
       theme(legend.position = "bottom")
   })
   
-  # Biplot ACP avec filtre appliqué
   output$acp_biplot <- renderPlot({
     req(data_reactive())
     result <- data_reactive()
-    
-    # Filtrage selon la sélection des régions
     if(length(input$region) > 0 && !"" %in% input$region) {
       result <- result %>% filter(Région %in% input$region)
     }
-    
-    # Graphique Biplot
     fviz_pca_biplot(PCA(result[, c("score_tourisme", "score_culture")], graph = FALSE), 
                     axes = c(1, 2), 
                     col.var = "blue", 
@@ -179,10 +152,14 @@ server <- function(input, output, session) {
                     label = "var")
   })
   
-  # ACP - Typologie des communes selon attractivité touristique et socio-culturelle
   output$acp_typologie <- renderPlot({
     req(data_reactive())
     result <- data_reactive()
+    
+    # Appliquer le filtre de région
+    if (length(input$region) > 0 && !"" %in% input$region) {
+      result <- result %>% filter(Région %in% input$region)
+    }
     
     ggplot(result, aes(x = Dim.1, y = Dim.2, color = cluster)) +
       geom_point(size = 2) +
@@ -191,56 +168,30 @@ server <- function(input, output, session) {
                                     "Peu touristique et peu culturel" = "#56B870", 
                                     "Culturel sans tourisme" = "#f07b6f", 
                                     "Touristique sans culture" = "#56B870")) +
-      labs(title = "ACP - Typologie des communes selon attractivité touristique et socio-culturelle")
+      labs(title = "ACP - Typologie des communes selon attractivité touristique et socio-culturelle") +
+      theme(legend.position = "bottom")
   })
   
-  # Carte Métropole avec filtrage et zoom sur la région
   output$carte_metro <- renderPlot({
     req(data_reactive())
     result <- data_reactive()
-    
-    # Filtrer pour la ou les régions sélectionnées
     if(length(input$region) > 0 && !"" %in% input$region) {
       result <- result %>% filter(Région %in% input$region)
     }
-    
-    # Charger les communes de métropole (exclure les îles)
     communes_sf <- st_read("https://france-geojson.gregoiredavid.fr/repo/communes.geojson", quiet = TRUE)
-    
-    # Exclure les îles : On ne garde que les communes de la métropole
     communes_sf <- communes_sf %>% filter(!str_detect(nom, "^(Guadeloupe|Martinique|Guyane|La Réunion|Mayotte|Saint-Pierre-et-Miquelon|Saint-Barthélemy|Saint-Martin)$"))
-    
-    # Harmonisation des noms pour la jointure
     communes_sf$nom <- str_to_upper(communes_sf$nom)
-    
-    # Effectuer la jointure entre communes_sf et result sur 'LIBGEO'
-    carte_clusters <- communes_sf %>% 
-      left_join(result, by = c("nom" = "LIBGEO"))
-    
-    # Recode des clusters : "Communes non sélectionnées" si les données sont manquantes
+    carte_clusters <- communes_sf %>% left_join(result, by = c("nom" = "LIBGEO"))
     carte_clusters$cluster_affichee <- case_when(
       is.na(carte_clusters$cluster) ~ "Communes non sélectionnées",
       carte_clusters$cluster == "Tourisme et culture" ~ "Tourisme et culture",
       carte_clusters$cluster == "Peu touristique et peu culturel" ~ "Peu touristique et peu culturel",
       TRUE ~ NA_character_
     )
-    
     carte_clusters$cluster_affichee <- factor(
       carte_clusters$cluster_affichee,
       levels = c("Tourisme et culture", "Peu touristique et peu culturel", "Communes non sélectionnées")
     )
-    
-    # Définir les limites pour le zoom sur la carte
-    if (nrow(carte_clusters) > 0) {
-      xmin <- min(st_bbox(carte_clusters)$xmin, na.rm = TRUE)
-      xmax <- max(st_bbox(carte_clusters)$xmax, na.rm = TRUE)
-      ymin <- min(st_bbox(carte_clusters)$ymin, na.rm = TRUE)
-      ymax <- max(st_bbox(carte_clusters)$ymax, na.rm = TRUE)
-    } else {
-      xmin <- xmax <- ymin <- ymax <- c(0, 0)  # Default in case no data
-    }
-    
-    # Affichage de la carte avec zoom dynamique
     ggplot(carte_clusters) +
       geom_sf(aes(fill = cluster_affichee), color = NA, size = 0.1) +
       scale_fill_manual(
@@ -257,34 +208,23 @@ server <- function(input, output, session) {
         title = paste("Carte des communes (métropole) selon attractivité touristique et socio-culturelle"),
         caption = "Source : INSEE + clustering (traitement personnel)"
       ) +
-      theme_minimal() +
-      coord_sf(xlim = c(xmin, xmax), ylim = c(ymin, ymax), datum = NA)  # Centrer la carte et zoomer
+      theme_minimal()
   })
   
-  # Carte Mayotte sans filtrage par région
   output$carte_mayotte <- renderPlot({
     req(data_reactive())
     result <- data_reactive()
-    
-    # Charger les communes de Mayotte sans appliquer le filtre de région
     communes_my <- st_read("https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/regions/mayotte/communes-mayotte.geojson", quiet = TRUE)
     communes_my$nom <- str_to_upper(communes_my$nom)
-    
-    # Effectuer la jointure pour la carte Mayotte
-    carte_mayotte <- communes_my %>% 
-      left_join(result, by = c("nom" = "LIBGEO"))
-    
-    # Recode des clusters : "Culturel sans tourisme" ou "Communes non sélectionnées"
+    carte_mayotte <- communes_my %>% left_join(result, by = c("nom" = "LIBGEO"))
     carte_mayotte$cluster_affichee <- case_when(
       carte_mayotte$cluster == "Culturel sans tourisme" ~ "Culturel sans tourisme",
       TRUE ~ "Communes non sélectionnées"
     )
-    
     carte_mayotte$cluster_affichee <- factor(
       carte_mayotte$cluster_affichee,
       levels = c("Culturel sans tourisme", "Communes non sélectionnées")
     )
-    
     ggplot(carte_mayotte) +
       geom_sf(aes(fill = cluster_affichee), color = "white", size = 0.2) +
       scale_fill_manual(
@@ -301,21 +241,36 @@ server <- function(input, output, session) {
       theme_minimal()
   })
   
-  # Table de la base de données filtrée
   output$data_table <- renderDT({
     req(data_reactive())
     result <- data_reactive()
-    
-    # Filtrage par région
     if(length(input$region) > 0 && !"" %in% input$region) {
       result <- result %>% filter(Région %in% input$region)
     }
-    
-    # Afficher la table avec DT
     datatable(result, options = list(pageLength = 10))
   })
   
-  # Téléchargement de la base de données filtrée
+  output$synthese_table <- renderDT({
+    req(data_reactive())
+    result <- data_reactive()
+    if (length(input$region) > 0 && !"" %in% input$region) {
+      result <- result %>% filter(Région %in% input$region)
+    }
+    vars_interet <- c("NB_G101", "NB_G102", "NB_G103", "NB_G104", 
+                      "NB_F303", "NB_F303_NB_SALLES", "NB_F305", "NB_F307", 
+                      "NB_F311", "NB_F312", "NB_F313", "NB_F314", 
+                      "NB_F315", "NB_F315_NB_SALLES")
+    tableau <- result %>%
+      select(Région, all_of(vars_interet)) %>%
+      group_by(Région) %>%
+      summarise(
+        `Nombre de communes` = n(),
+        across(all_of(vars_interet), ~sum(.x, na.rm = TRUE))
+      ) %>%
+      arrange(Région)
+    datatable(tableau, options = list(pageLength = 10))
+  })
+  
   output$download_data <- downloadHandler(
     filename = function() {
       paste("base_de_donnees_filtrée_", Sys.Date(), ".csv", sep = "")
@@ -323,17 +278,12 @@ server <- function(input, output, session) {
     content = function(file) {
       req(data_reactive())
       result <- data_reactive()
-      
-      # Filtrage par région avant téléchargement
       if(length(input$region) > 0 && !"" %in% input$region) {
         result <- result %>% filter(Région %in% input$region)
       }
-      
-      # Sauvegarder le fichier CSV
       write.csv(result, file, row.names = FALSE)
     }
   )
 }
 
-# Lancer l'application
 shinyApp(ui = ui, server = server)
