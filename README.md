@@ -1,13 +1,13 @@
 # Reporting d'une Analyse Multivariée - Culture & Tourisme
 
-## 🌍 Contexte de l’étude
+## Contexte de l’étude :
 
 Dans le cadre d’une SAÉ (Situation d’Apprentissage et d’Évaluation), nous avons mené un projet d’analyse statistique portant sur le lien entre attractivité touristique et équipements culturels des communes françaises.
 
 **Problématique :**  
 Les communes à fort attrait touristique sont-elles également riches en équipements culturels ?
 
-## 🎯 Objectifs
+## Objectifs : 
 
 L’objectif principal était d’analyser et de visualiser les relations entre les données touristiques et culturelles pour identifier des profils types de communes. Pour cela, plusieurs étapes méthodologiques ont été suivies :
 
@@ -17,7 +17,7 @@ L’objectif principal était d’analyser et de visualiser les relations entre 
 4. **Clustering (classification)** pour regrouper les communes en typologies homogènes.
 5. **Développement d'une application interactive** avec R Shiny pour explorer les résultats de manière dynamique.
 
-## Application R Shiny
+## Application R Shiny :
 
 Nous avons développé une application web interactive pour faciliter l'exploration et la visualisation des résultats de notre analyse multivariée.
 
@@ -30,14 +30,14 @@ Fonctionnalités principales :
 - Cartographie interactive
 - Possibilité d’automatiser un suivi annuel
 
-## Structure du projet
+## Structure du projet :
 
 - `data/` : fichiers de données utilisés
 - `scripts/` : scripts R de traitement, d’analyse et de visualisation
 - `app/` : code source de l'application R Shiny
 - `README.md` : ce fichier
 
-## Réalisé dans le cadre d’un projet universitaire
+## Réalisé dans le cadre d’un projet universitaire :
 
 Ce projet a été mené dans un cadre pédagogique, avec pour objectif de mobiliser des compétences en :
 - Statistiques multivariées
