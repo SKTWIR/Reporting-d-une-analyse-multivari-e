@@ -125,14 +125,14 @@ server <- function(input, output, session) {
            y = "Dimension 2") +
       scale_color_manual(values = c(
         "Auvergne-Rhône-Alpes" = "#4B9CD3", 
-        "Hauts-de-France" = "#56B870", 
+        "Hauts-de-France" = "#009E73", 
         "Provence-Alpes-Côte d'Azur" = "#f07b6f", 
-        "Occitanie" = "#56B870", 
+        "Occitanie" = "#CC79A7", 
         "Grand Est" = "#D55E00", 
         "Normandie" = "#E69F00", 
         "Nouvelle-Aquitaine" = "#009E73",
         "Bretagne" = "#F0E442",  
-        "Île-de-France" = "#56B870"  
+        "Île-de-France" = "#9966CC"  
       )) +
       theme(legend.position = "bottom")
   })

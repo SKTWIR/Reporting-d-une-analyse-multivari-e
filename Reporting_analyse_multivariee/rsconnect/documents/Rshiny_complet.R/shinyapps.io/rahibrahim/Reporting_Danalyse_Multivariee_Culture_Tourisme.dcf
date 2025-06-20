@@ -1,0 +1,13 @@
+name: Reporting_Danalyse_Multivariee_Culture_Tourisme
+title: Reporting_Danalyse_Multivariee_Culture_Tourisme
+username: rahibrahim
+account: rahibrahim
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 14966198
+bundleId: 10489976
+url: https://rahibrahim.shinyapps.io/Reporting_Danalyse_Multivariee_Culture_Tourisme/
+version: 1
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: server.R|ui.R
