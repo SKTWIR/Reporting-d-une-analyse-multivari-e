@@ -23,7 +23,7 @@ ui <- fluidPage(
       downloadButton("download_data", "Télécharger la base filtrée"),
       tags$hr(),
       tags$p("Télécharger le rapport d'analyse :"),
-      tags$a(href = "https://www.dropbox.com/scl/fi/tmzkxxtnbnofbqjs2bgf0/SAE-4.docx?rlkey=acny2yeonatpt4faviyx3kihq&st=l2wdq4ls&dl=1", "Télécharger le fichier Word", target = "_blank")
+      tags$a(href = "https://www.dropbox.com/scl/fi/mueypzcc23ij55vlmcpun/Groupe15_NKOGHE_HOUY_RAHMANI.pdf?rlkey=4k9qbaie0fwrs3bs7t4x4dnv9&st=ab2f61an&dl=1", "Télécharger le fichier PDF", target = "_blank")
     ),
     
     mainPanel(
